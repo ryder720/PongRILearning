@@ -19,8 +19,7 @@ class State:
         self.gameWindow = gameWindow
 
     def getHash(self):
-        self.gameHash = str(self.gameObs)
-        return self.gameHash
+        return str(self.gameObs)
 
     def updateState(self, p1_move, p2_move, ball_move):
         self.gameObs[self.p1.name] += p1_move
@@ -41,6 +40,7 @@ class State:
 
     def play(self, rounds=100):
         for i in range(rounds):
+            # Paddle and Ball reset
             self.p1.pos = (WINDOW_LENGTH/2 - 16, 10)
             self.p2.pos = (WINDOW_LENGTH/2 - 16, WINDOW_HEIGHT - 10)
             self.ball.pos = (WINDOW_LENGTH/2, WINDOW_HEIGHT/2)
@@ -54,7 +54,7 @@ class State:
                 # Wall bounce
                 if self.ball.pos[0] <= 0 or self.ball.pos[0] >= WINDOW_LENGTH:
                     new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1]))
-                    print(repr(new_vel) + ' ' + repr(new_vel * self.ball.speed))
+                    # print(repr(new_vel) + ' ' + repr(new_vel * self.ball.speed))
                     self.ball.velocity = new_vel * self.ball.speed
                 # Paddle bounce if I had any
                 if self.ball.rect.collidepoint(p1.pos) or self.ball.rect.collidepoint(p2.pos):
@@ -80,19 +80,21 @@ class State:
 
                 pygame.display.flip()
 
+                # FPS Counter
                 # print('FPS: ' + repr(1.0 / (time.time() - start_time)))
 
+                # Win conditions
                 if self.ball.pos[1] <= 0:
                     self.giveReward(1)
-                    print('p2 +1')
+                    print('p1 +1')
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
                     self.giveReward(2)
-                    print('p1 +1')
+                    print('p2 +1')
                     break
-        print(repr(self.p1.stateValue))
-        print(repr(self.p2.stateValue))
+        # print(repr(self.p1.stateValue))
+        # print(repr(self.p2.stateValue))
 
 
 class Player(pygame.sprite.Sprite):
@@ -111,8 +113,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
     def getHash(self, game_obs):
-        game_hash = str(game_obs)
-        return game_hash
+        return str(game_obs)
 
     def chooseAction(self, game_obs):
         x = self.pos[0]
@@ -156,7 +157,6 @@ class Ball(pygame.sprite.Sprite):
     def __init__(self, position=(0, 0), speed=10):
         self.pos = position
         self.speed = speed
-        #self.sprite = pygame.sprite.Sprite()
         self.image = pygame.image.load('Ball.png').convert()
         self.rect = self.image.get_rect()
         self.velocity = pygame.Vector2(4, -2)
@@ -170,4 +170,4 @@ if __name__ == '__main__':
     ball = Ball()
 
     st = State(p1, p2, ball, gw)
-    st.play(100)
+    st.play(1000)
