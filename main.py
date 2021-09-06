@@ -83,24 +83,26 @@ class State:
                 # print('FPS: ' + repr(1.0 / (time.time() - start_time)))
 
                 if self.ball.pos[1] <= 0:
-                    self.giveReward(2)
+                    self.giveReward(1)
+                    print('p2 +1')
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
-                    self.giveReward(1)
+                    self.giveReward(2)
+                    print('p1 +1')
                     break
-        # print(repr(self.p1.stateValue))
-        # print(repr(self.p2.stateValue))
+        print(repr(self.p1.stateValue))
+        print(repr(self.p2.stateValue))
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.3):
+    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.5):
         self.pos = (0, 0)
         self.name = name
         self.speed = speed
         self.expRate = exp_rate
-        self.lr = 0.2
-        self.gamma = 0.99
+        self.lr = 0.3
+        self.gamma = 0.90
         self.states = []
         self.stateValue = {}  # State -> Value
         self.moves = [1, -1, 0]
