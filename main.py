@@ -1,7 +1,7 @@
 import sys
 import pygame
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+import time
 PADDLE_SPEED = 10
 
 WINDOW_HEIGHT = 480
@@ -25,7 +25,7 @@ class State:
     def updateState(self, p1_move, p2_move, ball_move):
         self.gameObs[self.p1.name] += p1_move
         self.gameObs[self.p2.name] += p2_move
-        self.gameObs['ball'] += ball_move
+        self.gameObs['ball'] += (ball_move[0], ball_move[1])
         self.ball.pos = (self.ball.pos[0] + ball_move[0], self.ball.pos[1] + ball_move[1])
 
     def giveReward(self, player):
@@ -46,9 +46,20 @@ class State:
             self.ball.pos = (WINDOW_LENGTH/2, WINDOW_HEIGHT/2)
             # Should set a time limit
             while not self.isEnd:
+                start_time = time.time()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         sys.exit()
+
+                # Wall bounce
+                if self.ball.pos[0] <= 0 or self.ball.pos[0] >= WINDOW_LENGTH:
+                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1]))
+                    print(repr(new_vel) + ' ' + repr(new_vel * self.ball.speed))
+                    self.ball.velocity = new_vel * self.ball.speed
+                # Paddle bounce if I had any
+                if self.ball.rect.collidepoint(p1.pos) or self.ball.rect.collidepoint(p2.pos):
+                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
+                    self.ball.velocity = new_vel * self.ball.speed
 
                 p1_action = self.p1.chooseAction(self.gameObs) * self.p1.speed
                 p2_action = self.p2.chooseAction(self.gameObs) * self.p2.speed
@@ -57,17 +68,7 @@ class State:
                 obs_hash = self.getHash()
                 self.p1.addState(obs_hash)
                 self.p2.addState(obs_hash)
-                # Wall bounce
 
-                if self.ball.pos[0] <= 0 or self.ball.pos[0] >= WINDOW_LENGTH:
-                    new_vel = pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1])
-                    new_vel = pygame.math.Vector2.normalize(new_vel)
-                    self.ball.velocity = (new_vel.x, new_vel.y) * self.ball.speed
-                # Paddle bounce if I had any
-                if self.ball.rect.collidepoint(p1.pos) or self.ball.rect.collidepoint(p2.pos):
-                    new_vel = pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1])
-                    new_vel = pygame.math.Vector2.normalize(new_vel)
-                    self.ball.velocity = (new_vel.x, new_vel.y) * self.ball.speed
                 # Update display
                 self.p1.rect = self.p1.pos
                 self.p2.rect = self.p2.pos
@@ -79,6 +80,8 @@ class State:
 
                 pygame.display.flip()
 
+                # print('FPS: ' + repr(1.0 / (time.time() - start_time)))
+
                 if self.ball.pos[1] <= 0:
                     self.giveReward(2)
                     break
@@ -86,8 +89,8 @@ class State:
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
                     self.giveReward(1)
                     break
-        print(repr(self.p1.stateValue))
-        #print(repr(self.p2.stateValue))
+        # print(repr(self.p1.stateValue))
+        # print(repr(self.p2.stateValue))
 
 
 class Player(pygame.sprite.Sprite):
@@ -154,7 +157,7 @@ class Ball(pygame.sprite.Sprite):
         #self.sprite = pygame.sprite.Sprite()
         self.image = pygame.image.load('Ball.png').convert()
         self.rect = self.image.get_rect()
-        self.velocity = (4, -2)
+        self.velocity = pygame.Vector2(4, -2)
 
 
 if __name__ == '__main__':
