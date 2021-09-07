@@ -85,14 +85,14 @@ class State:
 
                 # Win conditions
                 if self.ball.pos[1] <= 0:
-                    self.giveReward(1)
+                    self.giveReward(2)
                     self.p1.reset()
                     self.p2.reset()
                     print('p1 +1')
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
-                    self.giveReward(2)
+                    self.giveReward(1)
                     self.p1.reset()
                     self.p2.reset()
                     print('p2 +1')
