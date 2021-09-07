@@ -97,6 +97,8 @@ class State:
                     self.p2.reset()
                     print('p2 +1')
                     break
+        # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
+        # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
         # print(repr(self.p1.stateValue))
         # print(repr(self.p2.stateValue))
 
@@ -175,4 +177,4 @@ if __name__ == '__main__':
     ball = Ball()
 
     st = State(p1, p2, ball, gw)
-    st.play(1000)
+    st.play(100)
