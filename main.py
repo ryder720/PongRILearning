@@ -94,7 +94,8 @@ class State:
                     self.giveReward(p1Reward, p2Reward)
                     self.p1.reset()
                     self.p2.reset()
-                    print('p1 +1')
+                    print('p1 +' + repr(p1Reward))
+                    print('p2 +' + repr(p2Reward))
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
@@ -102,7 +103,8 @@ class State:
                     self.giveReward(p1Reward, p2Reward)
                     self.p1.reset()
                     self.p2.reset()
-                    print('p2 +1')
+                    print('p1 +' + repr(p1Reward))
+                    print('p2 +' + repr(p2Reward))
                     break
         # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
         # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
