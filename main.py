@@ -86,11 +86,15 @@ class State:
                 # Win conditions
                 if self.ball.pos[1] <= 0:
                     self.giveReward(1)
+                    self.p1.reset()
+                    self.p2.reset()
                     print('p1 +1')
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
                     self.giveReward(2)
+                    self.p1.reset()
+                    self.p2.reset()
                     print('p2 +1')
                     break
         # print(repr(self.p1.stateValue))
@@ -98,7 +102,7 @@ class State:
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.5):
+    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.8):
         self.pos = (0, 0)
         self.name = name
         self.speed = speed
@@ -132,6 +136,7 @@ class Player(pygame.sprite.Sprite):
                 next_obs = game_obs.copy()
                 next_obs[self.name] += self.moves[a]
                 next_obs_hash = self.getHash(next_obs)
+                # This might be the slowdown
                 value = 0 if self.stateValue.get(next_obs_hash) is None else self.stateValue.get(next_obs_hash)
                 if value >= value_max:
                     value_max = value
