@@ -14,6 +14,7 @@ class State:
         self.p2 = p2
         self.ball = ball
         self.isEnd = False
+        # Game observation
         self.gameObs = {self.p1.name: self.p1.pos[0], self.p2.name: self.p2.pos[0], 'ball': self.ball.pos}  # Game observation
         self.gameHash = None
         self.gameWindow = gameWindow
@@ -28,7 +29,6 @@ class State:
         self.ball.pos = (self.ball.pos[0] + ball_move[0], self.ball.pos[1] + ball_move[1])
 
     def giveReward(self, player1, player2):
-
         self.p1.feedReward(player1)
         self.p2.feedReward(player2)
 
@@ -39,8 +39,8 @@ class State:
             self.p2.pos = (WINDOW_LENGTH/2 - 16, WINDOW_HEIGHT - 10)
             self.ball.pos = (WINDOW_LENGTH/2, WINDOW_HEIGHT/2)
 
-            p1Reward = 0
-            p2Reward = 0
+            p1_reward = 0
+            p2_reward = 0
             # Should set a time limit
             while not self.isEnd:
                 start_time = time.time()
@@ -55,17 +55,15 @@ class State:
                     self.ball.velocity = new_vel * self.ball.speed
                 # Paddle bounce if I had any
                 if self.ball.rect.collidepoint(p1.pos):
-                    p1Reward += 0.5
+                    p1_reward += 0.5
+                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
+                    self.ball.velocity = new_vel * self.ball.speed
+                elif self.ball.rect.collidepoint(p2.pos):
+                    p2_reward += 0.5
                     new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
                     self.ball.velocity = new_vel * self.ball.speed
 
-                if self.ball.rect.collidepoint(p2.pos):
-                    p2Reward += 0.5
-                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
-                    self.ball.velocity = new_vel * self.ball.speed
-
-
-
+                # Choose action and add state to each player
                 p1_action = self.p1.chooseAction(self.gameObs) * self.p1.speed
                 p2_action = self.p2.chooseAction(self.gameObs) * self.p2.speed
                 ball_action = self.ball.velocity
@@ -90,21 +88,21 @@ class State:
 
                 # Win conditions
                 if self.ball.pos[1] <= 0:
-                    p2Reward += 1
-                    self.giveReward(p1Reward, p2Reward)
+                    p2_reward += 1
+                    self.giveReward(p1_reward, p2_reward)
                     self.p1.reset()
                     self.p2.reset()
-                    print('p1 +' + repr(p1Reward))
-                    print('p2 +' + repr(p2Reward))
+                    print('p1 +' + repr(p1_reward))
+                    print('p2 +' + repr(p2_reward))
                     break
 
                 if self.ball.pos[1] >= WINDOW_HEIGHT:
-                    p1Reward += 1
-                    self.giveReward(p1Reward, p2Reward)
+                    p1_reward += 1
+                    self.giveReward(p1_reward, p2_reward)
                     self.p1.reset()
                     self.p2.reset()
-                    print('p1 +' + repr(p1Reward))
-                    print('p2 +' + repr(p2Reward))
+                    print('p1 +' + repr(p1_reward))
+                    print('p2 +' + repr(p2_reward))
                     break
         # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
         # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
@@ -118,7 +116,7 @@ class Player(pygame.sprite.Sprite):
         self.name = name
         self.speed = speed
         self.expRate = exp_rate
-        self.lr = 0.2
+        self.lr = 0.6
         self.gamma = 0.96
         self.states = []
         self.stateValue = {}  # State -> Value
@@ -165,6 +163,7 @@ class Player(pygame.sprite.Sprite):
             self.stateValue[st] += self.lr * (self.gamma * reward - self.stateValue[st])
             reward = self.stateValue[st]
 
+    # Clear current rounds states
     def reset(self):
         self.states = []
 
