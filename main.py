@@ -2,6 +2,7 @@ import sys
 import pygame
 import numpy as np
 import time
+import tracemalloc
 PADDLE_SPEED = 10
 
 WINDOW_HEIGHT = 480
@@ -25,7 +26,8 @@ class State:
     def updateState(self, p1_move, p2_move, ball_move):
         self.gameObs[self.p1.name] += p1_move
         self.gameObs[self.p2.name] += p2_move
-        self.gameObs['ball'] += (ball_move[0], ball_move[1])
+        self.gameObs['ball'] = (self.ball.pos[0] + ball_move[0], self.ball.pos[1] + ball_move[1],
+                                self.ball.velocity.x, self.ball.velocity.y)
         self.ball.pos = (self.ball.pos[0] + ball_move[0], self.ball.pos[1] + ball_move[1])
 
     def giveReward(self, player1, player2):
@@ -33,11 +35,13 @@ class State:
         self.p2.feedReward(player2)
 
     def play(self, rounds=100):
+        tracemalloc.start()
         for i in range(rounds):
             # Paddle and Ball reset
             self.p1.pos = (WINDOW_LENGTH/2 - 16, 10)
             self.p2.pos = (WINDOW_LENGTH/2 - 16, WINDOW_HEIGHT - 10)
             self.ball.pos = (WINDOW_LENGTH/2, WINDOW_HEIGHT/2)
+            self.gameObs = {self.p1.name: self.p1.pos[0], self.p2.name: self.p2.pos[0], 'ball': self.ball.pos}
 
             p1_reward = 0
             p2_reward = 0
@@ -104,6 +108,13 @@ class State:
                     print('p1 +' + repr(p1_reward))
                     print('p2 +' + repr(p2_reward))
                     break
+
+        snapshot = tracemalloc.take_snapshot()
+        top_stats = snapshot.statistics('lineno')
+
+        print("[ Top 10 ]")
+        for stat in top_stats[:10]:
+            print(stat)
         # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
         # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
         # print(repr(self.p1.stateValue))
@@ -145,7 +156,6 @@ class Player(pygame.sprite.Sprite):
                 next_obs = game_obs.copy()
                 next_obs[self.name] += self.moves[a]
                 next_obs_hash = self.getHash(next_obs)
-                # This might be the slowdown
                 value = 0 if self.stateValue.get(next_obs_hash) is None else self.stateValue.get(next_obs_hash)
                 if value >= value_max:
                     value_max = value
