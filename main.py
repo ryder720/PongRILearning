@@ -3,14 +3,14 @@ import pygame
 import numpy as np
 import time
 import tracemalloc
-PADDLE_SPEED = 10
 
+PADDLE_SPEED = 10
 WINDOW_HEIGHT = 480
 WINDOW_LENGTH = 480
 
 
 class State:
-    def __init__(self, p1, p2, ball, gameWindow):
+    def __init__(self, p1, p2, ball, game_window):
         self.p1 = p1
         self.p2 = p2
         self.ball = ball
@@ -18,7 +18,7 @@ class State:
         # Game observation
         self.gameObs = {self.p1.name: self.p1.pos[0], self.p2.name: self.p2.pos[0], 'ball': self.ball.pos}  # Game observation
         self.gameHash = None
-        self.gameWindow = gameWindow
+        self.game_window = game_window
 
     def getHash(self):
         return str(self.gameObs)
@@ -36,7 +36,10 @@ class State:
 
     def play(self, rounds=100):
         tracemalloc.start()
+        round = 1
         for i in range(rounds):
+            print('Round: ' + repr(round))
+            round += 1
             # Paddle and Ball reset
             self.p1.pos = (WINDOW_LENGTH/2 - 16, 10)
             self.p2.pos = (WINDOW_LENGTH/2 - 16, WINDOW_HEIGHT - 10)
@@ -57,6 +60,7 @@ class State:
                     new_vel = pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1])
                     self.ball.velocity = new_vel
                 # Paddle bounce if I had any
+                # Might be getting double bounce and scoring for the other player
                 if self.ball.rect.collidepoint(p1.pos):
                     p1_reward += 0.5
                     new_vel = pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1])
@@ -79,10 +83,10 @@ class State:
                 self.p1.rect = self.p1.pos
                 self.p2.rect = self.p2.pos
                 self.ball.rect[0], self.ball.rect[1] = self.ball.pos
-                self.gameWindow.fill((0, 0, 0))
-                self.gameWindow.blit(self.p1.image, self.p1.rect)
-                self.gameWindow.blit(self.p2.image, self.p2.rect)
-                self.gameWindow.blit(self.ball.image, self.ball.rect)
+                self.game_window.fill((0, 0, 0))
+                self.game_window.blit(self.p1.image, self.p1.rect)
+                self.game_window.blit(self.p2.image, self.p2.rect)
+                self.game_window.blit(self.ball.image, self.ball.rect)
 
                 pygame.display.flip()
 
@@ -116,12 +120,12 @@ class State:
             print(stat)
         # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
         # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
-        print(repr(self.p1.stateValue))
+        # print(repr(self.p1.stateValue))
         # print(repr(self.p2.stateValue))
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.8):
+    def __init__(self, name, speed=PADDLE_SPEED, exp_rate=0.3):
         self.pos = (0, 0)
         self.name = name
         self.speed = speed
