@@ -54,18 +54,17 @@ class State:
 
                 # Wall bounce
                 if self.ball.pos[0] <= 0 or self.ball.pos[0] >= WINDOW_LENGTH:
-                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1]))
-                    # print(repr(new_vel) + ' ' + repr(new_vel * self.ball.speed))
-                    self.ball.velocity = new_vel * self.ball.speed
+                    new_vel = pygame.math.Vector2(-self.ball.velocity[0], self.ball.velocity[1])
+                    self.ball.velocity = new_vel
                 # Paddle bounce if I had any
                 if self.ball.rect.collidepoint(p1.pos):
                     p1_reward += 0.5
-                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
-                    self.ball.velocity = new_vel * self.ball.speed
+                    new_vel = pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1])
+                    self.ball.velocity = new_vel
                 elif self.ball.rect.collidepoint(p2.pos):
                     p2_reward += 0.5
-                    new_vel = pygame.math.Vector2.normalize(pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1]))
-                    self.ball.velocity = new_vel * self.ball.speed
+                    new_vel = pygame.math.Vector2(self.ball.velocity[0], -self.ball.velocity[1])
+                    self.ball.velocity = new_vel
 
                 # Choose action and add state to each player
                 p1_action = self.p1.chooseAction(self.gameObs) * self.p1.speed
@@ -117,7 +116,7 @@ class State:
             print(stat)
         # print('p1 size: ' + repr(sys.getsizeof(self.p1.stateValue)))
         # print('p2 size: ' + repr(sys.getsizeof(self.p2.stateValue)))
-        # print(repr(self.p1.stateValue))
+        print(repr(self.p1.stateValue))
         # print(repr(self.p2.stateValue))
 
 
@@ -184,7 +183,9 @@ class Ball(pygame.sprite.Sprite):
         self.speed = speed
         self.image = pygame.image.load('Ball.png').convert()
         self.rect = self.image.get_rect()
-        self.velocity = pygame.Vector2(4, -2)
+        self.velocity = pygame.math.Vector2.normalize(pygame.Vector2(4, -2)) * self.speed
+        self.velocity.x = int(self.velocity.x)
+        self.velocity.y = int(self.velocity.y)
 
 
 if __name__ == '__main__':
